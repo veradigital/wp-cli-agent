@@ -4,6 +4,46 @@ wp-cli-agent is a set of skills an AI agent follows when it runs WP-CLI on a liv
 
 Command syntax for search-replace, database export, cron, cache, and multisite lives in [WordPress/agent-skills](https://github.com/WordPress/agent-skills) (`wp-wpcli-and-ops`). Install that skill beside these. This repo does not copy it.
 
+## For humans
+
+You name one site you already reach with WP-CLI. The agent reads these skills, runs the commands, and checks the public URL. You keep the logins.
+
+**What you need.** WP-CLI on that site, over SSH or Terminus. An agent that reads skills: Cursor, Claude Code, or Codex.
+
+**Install, for every project on this machine:**
+
+```bash
+npx skills add veradigital/wp-cli-agent --skill wp-cli-agent wp-status wp-apply -g -y
+npx skills add WordPress/agent-skills --skill wp-wpcli-and-ops -g -y
+```
+
+Drop `-g` to install into the current project only. Install both commands. The first is this procedure. The second is WordPress's command reference. Leave the files where the installer puts them.
+
+To work inside this repo, clone it and open it. `.cursor/skills`, `.claude/skills`, and `.codex/skills` already point at `skills/`. `AGENTS.md` is already in effect. The files you edit are in `skills/`.
+
+**What to say.** Name the site.
+
+- "What's pending on example.com?"
+- "Update plugins on example.com."
+- "Change the hours on the contact page of example.com to weekdays 9–5."
+
+The agent reports WordPress, visitor PHP, and pending updates, then waits. Say apply when you want it to write. After a write it loads the public URL. A critical error, a PHP fatal, or a blank page means it reverts that change and stops.
+
+**What stays with you.** Hostnames, SSH users, and tokens live in your private inventory. This repo is only the procedure.
+
+## For agents
+
+Follow the files. The procedure is the skill, not a guess from this page.
+
+1. Read `AGENTS.md`. Those rules stay on for the session.
+2. When someone names a site or asks for WP-CLI, read `skills/wp-cli-agent/SKILL.md`.
+3. Read `skills/wp-status/SKILL.md` and run it before any write. Report WordPress, the PHP version visitors get, and pending plugins and themes. Then stop.
+4. Read `skills/wp-apply/SKILL.md` only after they say to apply, update, or deploy.
+5. A content edit uses the content steps in `wp-cli-agent`. Fetch `post_content`, edit that copy, write it back, and load the public URL.
+6. Search-replace, database export, cron, cache, and multisite: read the installed skill `wp-wpcli-and-ops`. Leave those commands there.
+7. If SSH, Terminus, or the host WP-CLI gateway is missing, say so and stop.
+8. Link `skills/<name>` into another project. Keep one copy of the markdown.
+
 ## What you can ask an agent to do
 
 | Work | By hand in wp-admin | WP-CLI alone | With these skills |
@@ -11,11 +51,9 @@ Command syntax for search-replace, database export, cron, cache, and multisite l
 | See WordPress, PHP, and pending updates | Open the dashboard | `wp core version`, `wp plugin list` | `wp-status` on one named site, then stop |
 | Change page content | Edit in the builder | Possible, rarely done | Read the current post, write that copy, open the public URL |
 | Update plugins, themes, or core | Click Update | `wp plugin update` | `wp-apply`: one item at a time, health check, revert on failure |
-| Update every site you host | Repeat the clicks | Easy to over-reach | Not allowed. A full-fleet check is read-only |
+| Update every site you host | Repeat the clicks | Easy to over-reach | A full-fleet check is read-only. Updates stay on one named site |
 
 ## Skills
-
-The files you edit are in `skills/`. Cursor, Claude Code, and Codex each look in a different folder. Those folders are links to `skills/`, so there is one copy.
 
 | Skill | When it applies |
 | --- | --- |
@@ -30,23 +68,6 @@ The files you edit are in `skills/`. Cursor, Claude Code, and Codex each look in
 | Codex | `.codex/skills/` |
 
 Short rules that should always be in effect are in `AGENTS.md`. Cursor and Codex read that file. Claude Code reads it when the repo has no `CLAUDE.md`.
-
-To use the skills in another project, link `skills/<name>` into that tool's skills directory. Do not keep a second copy of the markdown.
-
-Install the WordPress command skill next to these, from their repo:
-
-```bash
-npx skills add WordPress/agent-skills --skill wp-wpcli-and-ops
-```
-
-## How an agent should behave
-
-1. Name one site. If the name is unknown, ask. Do not invent a hostname.
-2. Run status. Report WordPress, the PHP version visitors get, and pending plugins and themes. Wait until someone says to apply.
-3. Edit content or apply updates through WP-CLI. One plugin or theme at a time.
-4. Load the public URL. A critical error, a PHP fatal, or a blank page is a failure.
-5. On failure, revert that change and stop.
-6. Pantheon core comes from the platform upstream. WP Engine core is changed in the User Portal. SSH hosts use `wp core update`.
 
 ## Frequently Asked Questions About wp-cli-agent
 
